@@ -142,7 +142,7 @@ export const run = () => {
       ]).then((answers) => {
         let message = `${answers.type}`;
 
-        if (answers.scope) {
+        if (answers.scope && answers.scope !== '*') {
           message += `(${answers.scope})`;
         }
 
