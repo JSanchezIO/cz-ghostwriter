@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/JSanchezIO/cz-ghostwriter/compare/v1.1.0...v1.2.0) (2021-07-31)
+
+
+### Features
+
+- add ability to use default merge commit message
+ [210d29b](https://github.com/JSanchezIO/cz-ghostwriter/commit/210d29bb28e4ef96be47dd2061e3db5bc73d394c)
+
+
+
+<br />
+
 # [1.1.0](https://github.com/JSanchezIO/cz-ghostwriter/compare/v1.0.0...v1.1.0) (2021-06-17)
 
 
