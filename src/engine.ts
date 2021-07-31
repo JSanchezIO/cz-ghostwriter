@@ -1,4 +1,7 @@
 import * as chalk from 'chalk';
+import { execSync } from 'child_process';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 import * as wordWrap from 'word-wrap';
 import { getConfiguration } from './configuration';
 
@@ -46,6 +49,9 @@ const sanitizeSubject = (subject: string): string => {
   return sanitizedSubject;
 };
 
+const skipWhenUsingMergeMessage = ({ useMergeMessage }: Record<'useMergeMessage', string>) =>
+  !useMergeMessage;
+
 export const run = () => {
   const config = getConfiguration();
 
@@ -65,30 +71,47 @@ export const run = () => {
     return { name: `${prefix} ${description}`, value: type };
   });
 
-  const scopePrompt: Commitizen.API.Prompt<'scope'> = scopeChoices
+  const scopePrompt: Commitizen.API.Prompt<'scope' | 'useMergeMessage'> = scopeChoices
     ? {
         choices: scopeChoices,
         message: 'What is the scope of this commit? (press enter to skip)\n',
         name: 'scope',
         type: 'list',
+        when: skipWhenUsingMergeMessage,
       }
     : {
         filter: (scope) => scope.trim().toLowerCase(),
         message: 'What is the scope of this commit? (press enter to skip)\n',
         name: 'scope',
         type: 'input',
+        when: skipWhenUsingMergeMessage,
       };
+
+  const mergeMsgPath = resolve(execSync('git rev-parse --git-dir').toString().trim(), 'MERGE_MSG');
+  const isMerging = existsSync(mergeMsgPath);
+  const defaultMergeMsg = isMerging ? execSync(`cat ${mergeMsgPath}`).toString().trim() : '';
+  const hasDefaultMergeMsg = defaultMergeMsg.length > 0;
 
   return {
     prompter: (
-      cz: Commitizen.API.Prompter<'breaking' | 'issues' | 'scope' | 'subject' | 'type'>,
+      cz: Commitizen.API.Prompter<
+        'breaking' | 'issues' | 'scope' | 'subject' | 'type' | 'useMergeMessage'
+      >,
       commit: (message: string) => void
     ) => {
       cz.prompt([
         {
+          message:
+            'An ongoing merge was detected. Would you like to use the default merge commit message?',
+          name: 'useMergeMessage',
+          type: 'confirm',
+          when: hasDefaultMergeMsg,
+        },
+        {
           choices: typeChoices,
           message: 'What type of change are you committing?',
           name: 'type',
+          when: skipWhenUsingMergeMessage,
           type: 'list',
         },
         scopePrompt,
@@ -125,6 +148,7 @@ export const run = () => {
 
             return `The subject length must be less than or equal to ${subjectMaxLength} characters. The current length is ${subject.length} characters.`;
           },
+          when: skipWhenUsingMergeMessage,
         },
         {
           filter: (breaking) => breaking.trim(),
@@ -132,14 +156,30 @@ export const run = () => {
             'If any, describe the breaking change(s) contained within the commit:  (press enter to skip)\n',
           name: 'breaking',
           type: 'input',
+          when: skipWhenUsingMergeMessage,
         },
         {
           filter: (issues) => issues.trim(),
           message: `If any, enter the issues, separated by a space, that are related to this commit: (press enter to skip)\n`,
           name: 'issues',
           type: 'input',
+          when: skipWhenUsingMergeMessage,
         },
       ]).then((answers) => {
+        const useMergeMessage = Boolean(answers.useMergeMessage);
+
+        if (useMergeMessage) {
+          commit(
+            wordWrap(defaultMergeMsg, {
+              indent: '',
+              trim: true,
+              width: maxLineLength,
+            })
+          );
+
+          return;
+        }
+
         let message = `${answers.type}`;
 
         if (answers.scope && answers.scope !== '*') {

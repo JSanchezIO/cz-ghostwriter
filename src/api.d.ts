@@ -7,6 +7,7 @@ declare namespace Commitizen {
           name: TAnswers;
           transformer?: (value: string, answers: Record<TAnswers, string>) => string;
           validate?: (value: string, answers: Record<TAnswers, string>) => boolean | string;
+          when?: boolean | ((answers: Record<TAnswers, string>) => boolean);
         } & (
           | {
               default?: boolean;
