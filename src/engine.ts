@@ -1,6 +1,6 @@
 import * as chalk from 'chalk';
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import * as wordWrap from 'word-wrap';
 import { getConfiguration } from './configuration';
@@ -89,7 +89,7 @@ export const run = () => {
 
   const mergeMsgPath = resolve(execSync('git rev-parse --git-dir').toString().trim(), 'MERGE_MSG');
   const isMerging = existsSync(mergeMsgPath);
-  const defaultMergeMsg = isMerging ? execSync(`cat ${mergeMsgPath}`).toString().trim() : '';
+  const defaultMergeMsg = isMerging ? readFileSync(mergeMsgPath).toString().trim() : '';
   const hasDefaultMergeMsg = defaultMergeMsg.length > 0;
 
   return {
