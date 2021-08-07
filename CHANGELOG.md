@@ -1,3 +1,15 @@
+# [1.2.1](https://github.com/JSanchezIO/cz-ghostwriter/compare/v1.2.0...v1.2.1) (2021-08-07)
+
+
+### Fixes
+
+- support repositories with file system path containing spaces
+ [a095b6b](https://github.com/JSanchezIO/cz-ghostwriter/commit/a095b6b7efbca7cc28e122db20be82164be607a5)
+
+
+
+<br />
+
 # [1.2.0](https://github.com/JSanchezIO/cz-ghostwriter/compare/v1.1.0...v1.2.0) (2021-07-31)
 
 
